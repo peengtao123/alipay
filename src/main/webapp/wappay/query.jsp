@@ -1,7 +1,48 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+         pageEncoding="UTF-8"%>
+<%@page import="com.alipay.config.AlipayConfig" %>
+<%@page import="com.alipay.api.AlipayClient" %>
+<%@page import="com.alipay.api.DefaultAlipayClient" %>
+<%@page import="com.alipay.api.request.AlipayTradeQueryRequest" %>
+<%@page import="com.alipay.api.response.AlipayTradeQueryResponse" %>
+<%@page import="com.alipay.api.domain.AlipayTradeQueryModel" %>
+
+<%
+    /* *
+* 功能：支付宝手机网站alipay.trade.query (统一收单线下交易查询)调试入口页面
+* 版本：2.0
+* 修改日期：2016-11-28
+* 说明：
+* 以下代码只是为了方便商户测试而提供的样例代码，商户可以根据自己网站的需要，按照技术文档编写,并非一定要使用该代码。
+请确保项目文件有可写权限，不然打印不了日志。
+     */
+%>
+<%
+    if (request.getParameter("WIDout_trade_no") != null || request.getParameter("WIDtrade_no") != null) {
+        //商户订单号，商户网站订单系统中唯一订单号，必填
+        String out_trade_no = new String(request.getParameter("WIDout_trade_no").getBytes("ISO-8859-1"), "UTF-8");
+        //支付宝交易号
+        String trade_no = new String(request.getParameter("WIDtrade_no").getBytes("ISO-8859-1"), "UTF-8");
+        /**
+         * *******************
+         */
+        // SDK 公共请求类，包含公共请求参数，以及封装了签名与验签，开发者无需关注签名与验签     
+        AlipayClient client = new DefaultAlipayClient(AlipayConfig.URL, AlipayConfig.APPID, AlipayConfig.RSA_PRIVATE_KEY, AlipayConfig.FORMAT, AlipayConfig.CHARSET, AlipayConfig.ALIPAY_PUBLIC_KEY, AlipayConfig.SIGNTYPE);
+        AlipayTradeQueryRequest alipay_request = new AlipayTradeQueryRequest();
+
+        AlipayTradeQueryModel model = new AlipayTradeQueryModel();
+        model.setOutTradeNo(out_trade_no);
+        model.setTradeNo(trade_no);
+        alipay_request.setBizModel(model);
+
+        AlipayTradeQueryResponse alipay_response = client.execute(alipay_request);
+        out.println(alipay_response.getBody());
+    }
+%>
 <!DOCTYPE html>
 <html>
     <head>
-        <title>支付宝手机网站支付接口2.0</title>
+        <title>支付宝手机网站alipay.trade.query (统一收单线下交易查询)</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <style>
             *{
@@ -139,43 +180,36 @@
     </head>
     <body text=#000000 bgColor="#ffffff" leftMargin=0 topMargin=4>
         <header class="am-header">
-            <h1>支付宝手机网站支付2.0接口</h1>
+            <h1>支付宝手机网站alipay.trade.query (统一收单线下交易查询)</h1>
         </header>
         <div id="main">
-            <div id="body" style="clear:left">
-                <dl class="content">
-                    <dt></dt>
-                    <dd id="btn-dd">
-                        <span class="new-btn-login-sp">
-                            <button class="new-btn-login" style="text-align:center;" onclick="window.open('./wappay/pay.jsp')">手机网站2.0支付(接口名：alipay.trade.wap.pay)</button>
-                        </span>
-                    </dd>
-                    <dt></dt>
-                    <dd id="btn-dd">
-                        <span class="new-btn-login-sp">
-                            <button class="new-btn-login" style="text-align:center;" onclick="window.open('./wappay/query.jsp')">手机网站2.0订单查询 (接口名：alipay.trade.query)</button>
-                        </span>
-                    </dd>
-                    <dt></dt>
-                    <dd id="btn-dd">
-                        <span class="new-btn-login-sp">
-                            <button class="new-btn-login" style="text-align:center;" onclick="window.open('./wappay/refund.jsp')">手机网站2.0订单退款  (接口名：alipay.trade.refund)</button>
-                        </span>
-                    </dd>
-                    <dt></dt>
-                    <dd id="btn-dd">
-                        <span class="new-btn-login-sp">
-                            <button class="new-btn-login" style="text-align:center;" onclick="window.open('./wappay/refundquery.jsp')">手机网站2.0订单退款查询(接口名：alipay.trade.fastpay.refund.query)</button>
-                        </span>
-                    </dd>
-                    <dt></dt>
-                    <dd id="btn-dd">
-                        <span class="new-btn-login-sp">
-                            <button class="new-btn-login" style="text-align:center;" onclick="window.open('./wappay/downloadurl.jsp')">手机网站2.0账单下载(接口名：alipay.data.dataservice.bill.downloadurl.query)</button>
-                        </span>
-                    </dd>
-                </dl>
-            </div>
+            <form name=alipayment action='' method=post target="_blank">
+                <div id="body" style="clear:left">
+                    <dl class="content">
+                        <dt>商户订单号
+                            ：</dt>
+                        <dd>
+                            <input id="WIDout_trade_no" name="WIDout_trade_no" />
+                        </dd>
+                        <hr class="one_line">
+                        <dt>支付宝交易号：</dt>
+                        <dd>
+                            <input id="WIDtrade_no" name="WIDtrade_no" />
+                        </dd>
+                        <hr class="one_line">
+                        <dt></dt>
+                        <dd>
+                            <span style="line-height: 28px; color:red;">注意：商户订单号和支付宝交易号不能同时为空。 trade_no、  out_trade_no如果同时存在优先取trade_no</span>
+                        </dd>
+                        <dd id="btn-dd">
+                            <span class="new-btn-login-sp">
+                                <button class="new-btn-login" type="submit" style="text-align:center;">确 认</button>
+                            </span>
+                            <span class="note-help">如果您点击“确认”按钮，即表示您同意该次的执行操作。</span>
+                        </dd>
+                    </dl>
+                </div>
+            </form>
             <div id="foot">
                 <ul class="foot-ul">
                     <li>

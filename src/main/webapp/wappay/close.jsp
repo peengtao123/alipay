@@ -3,14 +3,12 @@
 <%@page import="com.alipay.config.AlipayConfig" %>
 <%@page import="com.alipay.api.AlipayClient"%>
 <%@page import="com.alipay.api.DefaultAlipayClient"%>
-<%@page import="com.alipay.api.AlipayApiException"%>
-<%@page import="com.alipay.api.response.AlipayTradeWapPayResponse"%>
-<%@page import="com.alipay.api.request.AlipayTradeWapPayRequest"%>
-<%@page import="com.alipay.api.domain.AlipayTradeWapPayModel" %>
-<%@page import="com.alipay.api.domain.AlipayTradeCreateModel"%>
+<%@page import="com.alipay.api.request.AlipayTradeCloseRequest" %>
+<%@page import="com.alipay.api.response.AlipayTradeCloseResponse" %>
+<%@page import="com.alipay.api.domain.AlipayTradeCloseModel"%>
 <%
     /* *
- * 功能：支付宝手机网站支付接口(alipay.trade.wap.pay)接口调试入口页面
+ * 功能：支付宝手机网站alipay.trade.close (统一收单交易关闭接口)调试入口页面
  * 版本：2.0
  * 修改日期：2016-11-01
  * 说明：
@@ -19,61 +17,32 @@
      */
 %>
 <%
-    if (request.getParameter("WIDout_trade_no") != null) {
-        // 商户订单号，商户网站订单系统中唯一订单号，必填
+    if (request.getParameter("WIDout_trade_no") != null || request.getParameter("WIDtrade_no") != null) {
+        //商户订单号和支付宝交易号不能同时为空。 trade_no、  out_trade_no如果同时存在优先取trade_no
+        //商户订单号，和支付宝交易号二选一
         String out_trade_no = new String(request.getParameter("WIDout_trade_no").getBytes("ISO-8859-1"), "UTF-8");
-        // 订单名称，必填
-        String subject = new String(request.getParameter("WIDsubject").getBytes("ISO-8859-1"), "UTF-8");
-        System.out.println(subject);
-        // 付款金额，必填
-        String total_amount = new String(request.getParameter("WIDtotal_amount").getBytes("ISO-8859-1"), "UTF-8");
-        // 商品描述，可空
-        String body = new String(request.getParameter("WIDbody").getBytes("ISO-8859-1"), "UTF-8");
-        // 超时时间 可空
-        String timeout_express = "2m";
-        // 销售产品码 必填
-        String product_code = "QUICK_WAP_WAY";
+        //支付宝交易号，和商户订单号二选一
+        String trade_no = new String(request.getParameter("WIDtrade_no").getBytes("ISO-8859-1"), "UTF-8");
         /**
          * *******************
          */
         // SDK 公共请求类，包含公共请求参数，以及封装了签名与验签，开发者无需关注签名与验签     
-        //调用RSA签名方式
         AlipayClient client = new DefaultAlipayClient(AlipayConfig.URL, AlipayConfig.APPID, AlipayConfig.RSA_PRIVATE_KEY, AlipayConfig.FORMAT, AlipayConfig.CHARSET, AlipayConfig.ALIPAY_PUBLIC_KEY, AlipayConfig.SIGNTYPE);
-        AlipayTradeWapPayRequest alipay_request = new AlipayTradeWapPayRequest();
+        AlipayTradeCloseRequest alipay_request = new AlipayTradeCloseRequest();
 
-        // 封装请求支付信息
-        AlipayTradeWapPayModel model = new AlipayTradeWapPayModel();
+        AlipayTradeCloseModel model = new AlipayTradeCloseModel();
         model.setOutTradeNo(out_trade_no);
-        model.setSubject(subject);
-        model.setTotalAmount(total_amount);
-        model.setBody(body);
-        model.setTimeoutExpress(timeout_express);
-        model.setProductCode(product_code);
+        model.setTradeNo(trade_no);
         alipay_request.setBizModel(model);
-        // 设置异步通知地址
-        alipay_request.setNotifyUrl(AlipayConfig.notify_url);
-        // 设置同步地址
-        alipay_request.setReturnUrl(AlipayConfig.return_url);
 
-        // form表单生产
-        String form = "";
-        try {
-            // 调用SDK生成表单
-            form = client.pageExecute(alipay_request).getBody();
-            response.setContentType("text/html;charset=" + AlipayConfig.CHARSET);
-            response.getWriter().write(form);//直接将完整的表单html输出到页面 
-            response.getWriter().flush();
-            response.getWriter().close();
-        } catch (AlipayApiException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        AlipayTradeCloseResponse alipay_response = client.execute(alipay_request);
+        System.out.println(alipay_response.getBody());
     }
 %>
 <!DOCTYPE html>
 <html>
     <head>
-        <title>支付宝手机网站支付接口</title>
+        <title>支付宝手机网站alipay.trade.close(统一收单交易关闭接口)</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <style>
             *{
@@ -211,33 +180,27 @@
     </head>
     <body text=#000000 bgColor="#ffffff" leftMargin=0 topMargin=4>
         <header class="am-header">
-            <h1>支付宝手机网站支付接口快速通道(接口名：alipay.trade.wap.pay)</h1>
+            <h1>支付宝手机网站交易关闭接口(接口名：alipay.trade.close )</h1>
         </header>
         <div id="main">
             <form name=alipayment action='' method=post target="_blank">
                 <div id="body" style="clear:left">
                     <dl class="content">
-                        <dt>商户订单号：</dt>
+                        <dt>商户订单号
+                            ：</dt>
                         <dd>
                             <input id="WIDout_trade_no" name="WIDout_trade_no" />
                         </dd>
                         <hr class="one_line">
-                        <dt>订单名称：</dt>
+                        <dt>支付宝交易号：</dt>
                         <dd>
-                            <input id="WIDsubject" name="WIDsubject" />
-                        </dd>
-                        <hr class="one_line">
-                        <dt>付款金额：</dt>
-                        <dd>
-                            <input id="WIDtotal_amount" name="WIDtotal_amount" />
-                        </dd>
-                        <hr class="one_line"/>
-                        <dt>商品描述：</dt>
-                        <dd>
-                            <input id="WIDbody" name="WIDbody" />
+                            <input id="WIDtrade_no" name="WIDtrade_no" />
                         </dd>
                         <hr class="one_line">
                         <dt></dt>
+                        <dd>
+                            <span style="line-height: 28px; color:red;">注意：商户订单号和支付宝交易号不能同时为空。 trade_no、  out_trade_no如果同时存在优先取trade_no</span>
+                        </dd>
                         <dd id="btn-dd">
                             <span class="new-btn-login-sp">
                                 <button class="new-btn-login" type="submit" style="text-align:center;">确 认</button>
@@ -256,22 +219,4 @@
             </div>
         </div>
     </body>
-    <script language="javascript">
-        function GetDateNow() {
-            var vNow = new Date();
-            var sNow = "";
-            sNow += String(vNow.getFullYear());
-            sNow += String(vNow.getMonth() + 1);
-            sNow += String(vNow.getDate());
-            sNow += String(vNow.getHours());
-            sNow += String(vNow.getMinutes());
-            sNow += String(vNow.getSeconds());
-            sNow += String(vNow.getMilliseconds());
-            document.getElementById("WIDout_trade_no").value = sNow;
-            document.getElementById("WIDsubject").value = "手机网站支付测试商品";
-            document.getElementById("WIDtotal_amount").value = "0.01";
-            document.getElementById("WIDbody").value = "购买测试商品0.01元";
-        }
-        GetDateNow();
-    </script>
 </html>

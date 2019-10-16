@@ -1,30 +1,30 @@
-(function () {
+(function() {
     var b = {};
     var a = {};
     a.PADCHAR = "=";
     a.ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    a.makeDOMException = function () {
+    a.makeDOMException = function() {
         var f, d;
         try {
             return new DOMException(DOMException.INVALID_CHARACTER_ERR)
-        } catch (d) {
+        } catch(d) {
             var c = new Error("DOM Exception 5");
             c.code = c.number = 5;
             c.name = c.description = "INVALID_CHARACTER_ERR";
-            c.toString = function () {
+            c.toString = function() {
                 return "Error: " + c.name + ": " + c.message
             };
             return c
         }
     };
-    a.getbyte64 = function (e, d) {
+    a.getbyte64 = function(e, d) {
         var c = a.ALPHA.indexOf(e.charAt(d));
         if (c === -1) {
             throw a.makeDOMException()
         }
         return c
     };
-    a.decode = function (f) {
+    a.decode = function(f) {
         f = "" + f;
         var j = a.getbyte64;
         var h, e, g;
@@ -49,25 +49,25 @@
             c.push(String.fromCharCode(g >> 16, (g >> 8) & 255, g & 255))
         }
         switch (h) {
-            case 1:
-                g = (j(f, e) << 18) | (j(f, e + 1) << 12) | (j(f, e + 2) << 6);
-                c.push(String.fromCharCode(g >> 16, (g >> 8) & 255));
-                break;
-            case 2:
-                g = (j(f, e) << 18) | (j(f, e + 1) << 12);
-                c.push(String.fromCharCode(g >> 16));
-                break
+        case 1:
+            g = (j(f, e) << 18) | (j(f, e + 1) << 12) | (j(f, e + 2) << 6);
+            c.push(String.fromCharCode(g >> 16, (g >> 8) & 255));
+            break;
+        case 2:
+            g = (j(f, e) << 18) | (j(f, e + 1) << 12);
+            c.push(String.fromCharCode(g >> 16));
+            break
         }
         return c.join("")
     };
-    a.getbyte = function (e, d) {
+    a.getbyte = function(e, d) {
         var c = e.charCodeAt(d);
         if (c > 255) {
             throw a.makeDOMException()
         }
         return c
     };
-    a.encode = function (f) {
+    a.encode = function(f) {
         if (arguments.length !== 1) {
             throw new SyntaxError("Not enough arguments")
         }
@@ -89,22 +89,22 @@
             c.push(h.charAt(j & 63))
         }
         switch (f.length - d) {
-            case 1:
-                j = k(f, e) << 16;
-                c.push(h.charAt(j >> 18) + h.charAt((j >> 12) & 63) + g + g);
-                break;
-            case 2:
-                j = (k(f, e) << 16) | (k(f, e + 1) << 8);
-                c.push(h.charAt(j >> 18) + h.charAt((j >> 12) & 63) + h.charAt((j >> 6) & 63) + g);
-                break
+        case 1:
+            j = k(f, e) << 16;
+            c.push(h.charAt(j >> 18) + h.charAt((j >> 12) & 63) + g + g);
+            break;
+        case 2:
+            j = (k(f, e) << 16) | (k(f, e + 1) << 8);
+            c.push(h.charAt(j >> 18) + h.charAt((j >> 12) & 63) + h.charAt((j >> 6) & 63) + g);
+            break
         }
         return c.join("")
     };
-    b.pay = function (d) {
+    b.pay = function(d) {
         var c = encodeURIComponent(a.encode(d));
         location.href = "pay.html?goto=" + c
     };
-    b.decode = function (c) {
+    b.decode = function(c) {
         return a.decode(decodeURIComponent(c))
     };
     window._AP = b
